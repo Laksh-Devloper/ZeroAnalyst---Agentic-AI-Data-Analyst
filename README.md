@@ -262,15 +262,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Plotly** for interactive visualizations
 - **ChromaDB** for vector search
 
----
-
-## 📧 Contact
-
-- **GitHub**: [@yourusername](https://github.com/yourusername)
-- **Email**: your.email@example.com
-- **Twitter**: [@yourhandle](https://twitter.com/yourhandle)
-
----
 
 ## 🌟 Star History
 
