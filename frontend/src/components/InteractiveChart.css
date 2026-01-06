@@ -1,0 +1,52 @@
+.interactive-chart {
+    width: 100%;
+    min-height: 400px;
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
+    border: 1px solid var(--border-color);
+    transition: all var(--transition-base);
+}
+
+.interactive-chart:hover {
+    border-color: var(--border-color-hover);
+    box-shadow: var(--shadow-md);
+}
+
+.chart-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    color: var(--text-tertiary);
+    font-size: 16px;
+}
+
+/* Plotly specific overrides */
+.interactive-chart .modebar {
+    background: var(--bg-card) !important;
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-xs);
+}
+
+.interactive-chart .modebar-btn {
+    color: var(--text-secondary) !important;
+}
+
+.interactive-chart .modebar-btn:hover {
+    background: var(--bg-card-hover) !important;
+    color: var(--color-primary) !important;
+}
+
+.interactive-chart .modebar-btn.active {
+    background: var(--color-primary) !important;
+    color: var(--bg-primary) !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .interactive-chart {
+        min-height: 300px;
+        padding: var(--spacing-sm);
+    }
+}
