@@ -4,6 +4,7 @@
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
+[![Architecture](https://img.shields.io/badge/Architecture-System_Design-orange)](./SYSTEM_DESIGN.md)
 
 ---
 
