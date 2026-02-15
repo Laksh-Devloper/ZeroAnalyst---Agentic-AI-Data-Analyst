@@ -1,59 +1,64 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Navbar.css';
 
-function Navbar({ onNavigate, currentPage }) {
+function Navbar({ user, onLogout }) {
+    const navigate = useNavigate();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     return (
         <nav className="navbar">
             <div className="navbar-container">
                 {/* Logo */}
-                <div className="navbar-brand" onClick={() => onNavigate('home')}>
-                    <div className="logo-icon">
-                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                            <rect width="32" height="32" rx="8" fill="url(#gradient)" />
-                            <path d="M8 20L12 16L16 18L20 12L24 16" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                            <defs>
-                                <linearGradient id="gradient" x1="0" y1="0" x2="32" y2="32">
-                                    <stop offset="0%" stopColor="#3B82F6" />
-                                    <stop offset="100%" stopColor="#2563EB" />
-                                </linearGradient>
-                            </defs>
-                        </svg>
-                    </div>
-                    <span className="logo-text">InsightFlow</span>
+                <div className="navbar-brand" onClick={() => navigate('/')}>
+                    <div className="logo-icon">0</div>
+                    <span className="logo-text">ZeroAnalyst</span>
                 </div>
 
                 {/* Desktop Navigation */}
                 <div className="navbar-menu">
-                    <button
-                        className={`nav-link ${currentPage === 'home' ? 'active' : ''}`}
-                        onClick={() => onNavigate('home')}
-                    >
+                    <button className="nav-link" onClick={() => navigate('/')}>
                         Home
                     </button>
-                    <button
-                        className={`nav-link ${currentPage === 'analyze' ? 'active' : ''}`}
-                        onClick={() => onNavigate('analyze')}
-                    >
-                        Analyze
-                    </button>
-                    <button
-                        className={`nav-link ${currentPage === 'features' ? 'active' : ''}`}
-                        onClick={() => onNavigate('features')}
-                    >
+                    <button className="nav-link" onClick={() => navigate('/features')}>
                         Features
                     </button>
+                    {user && (
+                        <>
+                            <button className="nav-link" onClick={() => navigate('/analyze')}>
+                                Analyze
+                            </button>
+                            <button className="nav-link" onClick={() => navigate('/history')}>
+                                History
+                            </button>
+                        </>
+                    )}
                 </div>
 
-                {/* CTA Button */}
+                {/* User Actions */}
                 <div className="navbar-actions">
-                    <button
-                        className="btn-primary"
-                        onClick={() => onNavigate('analyze')}
-                    >
-                        Get Started
-                    </button>
+                    {user ? (
+                        <>
+                            <div className="user-info">
+                                <div className="user-avatar">
+                                    {user.email?.charAt(0).toUpperCase() || 'U'}
+                                </div>
+                                <span className="user-email">{user.email}</span>
+                            </div>
+                            <button className="btn-secondary" onClick={onLogout}>
+                                Logout
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <button className="btn-ghost" onClick={() => navigate('/login')}>
+                                Sign In
+                            </button>
+                            <button className="btn-primary" onClick={() => navigate('/register')}>
+                                Get Started
+                            </button>
+                        </>
+                    )}
                 </div>
 
                 {/* Mobile Menu Toggle */}
@@ -71,29 +76,64 @@ function Navbar({ onNavigate, currentPage }) {
             {mobileMenuOpen && (
                 <div className="mobile-menu">
                     <button
-                        className={`mobile-nav-link ${currentPage === 'home' ? 'active' : ''}`}
-                        onClick={() => { onNavigate('home'); setMobileMenuOpen(false); }}
+                        className="mobile-nav-link"
+                        onClick={() => { navigate('/'); setMobileMenuOpen(false); }}
                     >
                         Home
                     </button>
                     <button
-                        className={`mobile-nav-link ${currentPage === 'analyze' ? 'active' : ''}`}
-                        onClick={() => { onNavigate('analyze'); setMobileMenuOpen(false); }}
-                    >
-                        Analyze
-                    </button>
-                    <button
-                        className={`mobile-nav-link ${currentPage === 'features' ? 'active' : ''}`}
-                        onClick={() => { onNavigate('features'); setMobileMenuOpen(false); }}
+                        className="mobile-nav-link"
+                        onClick={() => { navigate('/features'); setMobileMenuOpen(false); }}
                     >
                         Features
                     </button>
-                    <button
-                        className="btn-primary mobile"
-                        onClick={() => { onNavigate('analyze'); setMobileMenuOpen(false); }}
-                    >
-                        Get Started
-                    </button>
+                    {user && (
+                        <>
+                            <button
+                                className="mobile-nav-link"
+                                onClick={() => { navigate('/analyze'); setMobileMenuOpen(false); }}
+                            >
+                                Analyze
+                            </button>
+                            <button
+                                className="mobile-nav-link"
+                                onClick={() => { navigate('/history'); setMobileMenuOpen(false); }}
+                            >
+                                History
+                            </button>
+                        </>
+                    )}
+                    {user ? (
+                        <>
+                            <div className="mobile-user-info">
+                                <div className="user-avatar">
+                                    {user.email?.charAt(0).toUpperCase() || 'U'}
+                                </div>
+                                <span>{user.email}</span>
+                            </div>
+                            <button
+                                className="btn-secondary mobile"
+                                onClick={() => { onLogout(); setMobileMenuOpen(false); }}
+                            >
+                                Logout
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <button
+                                className="btn-ghost mobile"
+                                onClick={() => { navigate('/login'); setMobileMenuOpen(false); }}
+                            >
+                                Sign In
+                            </button>
+                            <button
+                                className="btn-primary mobile"
+                                onClick={() => { navigate('/register'); setMobileMenuOpen(false); }}
+                            >
+                                Get Started
+                            </button>
+                        </>
+                    )}
                 </div>
             )}
         </nav>

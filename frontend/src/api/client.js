@@ -17,8 +17,13 @@ export const uploadFile = async (file) => {
 };
 
 export const analyzeData = async (filepath) => {
+    const token = localStorage.getItem('access_token');
     const response = await axios.post(`${API_BASE_URL}/analyze`, {
         filepath,
+    }, {
+        headers: token ? {
+            'Authorization': `Bearer ${token}`
+        } : {}
     });
 
     return response.data;

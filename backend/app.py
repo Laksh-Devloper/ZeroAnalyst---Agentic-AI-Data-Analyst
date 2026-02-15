@@ -3,7 +3,7 @@ ZeroAnalyst - FastAPI Backend
 Modern async API with WebSocket support for real-time AI chat
 """
 
-from fastapi import FastAPI, File, UploadFile, WebSocket, WebSocketDisconnect, HTTPException, BackgroundTasks
+from fastapi import FastAPI, File, UploadFile, WebSocket, WebSocketDisconnect, HTTPException, BackgroundTasks, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, FileResponse
 from pydantic import BaseModel
@@ -26,6 +26,10 @@ from modules.agent_engine import AgentEngine
 from modules.rag_pipeline import RAGPipeline
 from modules.tool_registry import ToolRegistry
 
+# Import authentication router
+from routes.auth import router as auth_router, get_current_user
+from routes.history import router as history_router
+
 load_dotenv()
 
 # Initialize FastAPI app
@@ -36,6 +40,10 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+# Include routers
+app.include_router(auth_router)
+app.include_router(history_router)
 
 # CORS Configuration
 app.add_middleware(
@@ -198,8 +206,122 @@ async def upload_file(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f'Error processing file: {str(e)}')
 
 
+@app.post("/api/upload-from-s3")
+async def upload_from_s3(request: dict, user = Depends(get_current_user)):
+    """
+    Fetch file from S3 URL and return preview.
+    Supports public URLs and private buckets via AWS credentials in .env.
+    """
+    try:
+        import boto3
+        import requests
+        import re
+        from urllib.parse import urlparse
+        
+        s3_url = request.get('s3_url', '').strip()
+        if not s3_url:
+            raise HTTPException(status_code=400, detail='S3 URL is required')
+            
+        print(f"[S3] Processing URL: {s3_url}")
+        
+        bucket_name = None
+        s3_key = None
+        
+        # Parse S3 URL
+        if s3_url.startswith('s3://'):
+            match = re.match(r's3://([^/]+)/(.+)', s3_url)
+            if match:
+                bucket_name, s3_key = match.groups()
+        else:
+            # Handle https://bucket.s3.region.amazonaws.com/key
+            parsed_url = urlparse(s3_url)
+            host = parsed_url.netloc
+            if 's3' in host and 'amazonaws.com' in host:
+                # bucket.s3.amazonaws.com or bucket.s3-region.amazonaws.com
+                bucket_name = host.split('.')[0]
+                s3_key = parsed_url.path.lstrip('/')
+        
+        filename = s3_key.split('/')[-1] if s3_key else s3_url.split('/')[-1].split('?')[0]
+        
+        if not allowed_file(filename):
+            raise HTTPException(status_code=400, detail='File type not allowed. Use CSV or Excel.')
+
+        content = None
+        
+        # Try Boto3 first (for private or public access if credentials exist)
+        aws_access_key = os.getenv('AWS_ACCESS_KEY_ID')
+        aws_secret_key = os.getenv('AWS_SECRET_ACCESS_KEY')
+        region = os.getenv('AWS_REGION', 'us-east-1')
+        
+        if bucket_name and s3_key and aws_access_key and aws_secret_key:
+            try:
+                print(f"[S3] Attempting authenticated download using Boto3...")
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id=aws_access_key,
+                    aws_secret_access_key=aws_secret_key,
+                    region_name=region
+                )
+                response = s3.get_object(Bucket=bucket_name, Key=s3_key)
+                content = response['Body'].read()
+                print("[S3] Boto3 download successful!")
+            except Exception as e:
+                print(f"[S3] Boto3 failed: {str(e)}")
+        
+        # Fallback to requests for public URLs
+        if content is None:
+            print(f"[S3] Attempting public download via Requests...")
+            # If it was s3://, we need a public https URL
+            pub_url = s3_url
+            if s3_url.startswith('s3://'):
+                pub_url = f'https://{bucket_name}.s3.amazonaws.com/{s3_key}'
+            
+            resp = requests.get(pub_url, timeout=30)
+            if resp.status_code == 200:
+                content = resp.content
+                print("[S3] Public download successful!")
+            elif resp.status_code == 403:
+                raise HTTPException(
+                    status_code=403, 
+                    detail="Access Denied (403). This S3 file is private. Please make it public or add AWS Credentials to the backend .env file."
+                )
+            else:
+                raise HTTPException(status_code=resp.status_code, detail=f"S3 returned error {resp.status_code}")
+
+        if len(content) > MAX_FILE_SIZE:
+            raise HTTPException(status_code=400, detail=f"File too large. Max size {MAX_FILE_SIZE/1024/1024}MB")
+            
+        # Save locally
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        with open(filepath, 'wb') as f:
+            f.write(content)
+            
+        # Read for preview
+        file_ext = filename.rsplit('.', 1)[1].lower()
+        df = pd.read_csv(filepath) if file_ext == 'csv' else pd.read_excel(filepath)
+            
+        if df.empty:
+            raise HTTPException(status_code=400, detail='File is empty')
+            
+        return {
+            'filename': filename,
+            'rows': len(df),
+            'columns': len(df.columns),
+            'column_names': list(df.columns),
+            'preview': df.head(10).to_dict(orient='records'),
+            'filepath': filepath
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[S3] Fatal Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"S3 Error: {str(e)}")
+
+
+
 @app.post("/api/analyze")
-async def analyze_data(request: AnalyzeRequest):
+async def analyze_data(request: AnalyzeRequest, user = Depends(get_current_user)):
     """
     Analyze uploaded data and return comprehensive results.
     
@@ -207,10 +329,16 @@ async def analyze_data(request: AnalyzeRequest):
         JSON with cleaned data, statistics, charts, and insights
     """
     try:
+        from modules.supabase_client import db
+        
         filepath = request.filepath
         
         if not filepath or not os.path.exists(filepath):
             raise HTTPException(status_code=400, detail='Invalid file path')
+        
+        # Get filename and file size
+        filename = os.path.basename(filepath)
+        file_size = os.path.getsize(filepath)
         
         # Read file
         file_ext = filepath.rsplit('.', 1)[1].lower()
@@ -250,12 +378,26 @@ async def analyze_data(request: AnalyzeRequest):
         # Clean NaN values
         results = clean_nan_values(results)
         
+        # Save to history (only metadata, not full results)
+        try:
+            db.save_analysis(
+                user_id=user.id,
+                filename=filename,
+                analysis_results={"filepath": filepath},
+                file_size=file_size
+            )
+        except Exception as e:
+            # Don't fail the request if history save fails
+            print(f"Failed to save to history: {e}")
+        
         return results
     
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f'Error analyzing data: {str(e)}')
+
+
 
 
 @app.post("/api/generate-plotly-chart")

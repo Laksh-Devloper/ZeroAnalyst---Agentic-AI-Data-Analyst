@@ -248,6 +248,29 @@
   margin-bottom: 40px;
 }
 
+.upload-divider {
+  display: flex;
+  align-items: center;
+  margin: var(--spacing-xl) 0;
+  color: var(--text-muted);
+}
+
+.upload-divider::before,
+.upload-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-color);
+}
+
+.upload-divider span {
+  padding: 0 var(--spacing-lg);
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
 .loading-overlay {
   text-align: center;
   padding: 60px 20px;

@@ -1,260 +1,354 @@
-# 🤖 ZeroAnalyst
+# 🚀 ZeroAnalyst - AI Data Analyst
 
-**From Zero to Insights in Seconds**
+**From Zero to Insights in Seconds** - An intelligent data analysis platform powered by Google Gemini AI.
 
-ZeroAnalyst is an AI-powered data analysis platform that lets you chat with your data in natural language. No coding, no analysts, no waiting—just upload your CSV/Excel file and start asking questions.
-
-![ZeroAnalyst](https://img.shields.io/badge/AI-Powered-00ff88?style=for-the-badge)
-![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
-![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)
-![Gemini](https://img.shields.io/badge/Gemini_2.5-4285F4?style=for-the-badge&logo=google&logoColor=white)
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
 
 ---
 
 ## ✨ Features
 
-### 💬 **Conversational AI Analysis**
-- Ask questions in plain English
-- Get instant answers powered by Gemini 2.5 Flash
-- Real-time WebSocket communication
-- Context-aware follow-up questions
-- Smart suggested questions
+### 🔐 **User Authentication**
+- Secure login & registration with Supabase
+- JWT-based session management
+- Protected routes and API endpoints
+- User-specific data isolation
 
-### 🧹 **Automated Data Cleaning**
-- Removes duplicates automatically
-- Handles missing values intelligently
-- Auto-detects column types (numeric, categorical, datetime)
-- Filters low-quality columns
+### 📊 **Intelligent Data Analysis**
+- **Automatic Data Cleaning** - Handles missing values, duplicates, and outliers
+- **Smart Statistics** - Comprehensive statistical analysis for all data types
+- **Interactive Charts** - Beautiful visualizations with Plotly
+- **AI-Powered Insights** - Google Gemini generates actionable insights
+- **Data Preview** - Clean, formatted data tables
 
-### 📊 **Interactive Visualizations**
-- 5 chart types: Line, Bar, Histogram, Box, Pie
-- Powered by Plotly (zoom, pan, hover)
-- Export charts as PNG/SVG
-- AI generates perfect charts for your data
+### 💬 **AI Chat Assistant**
+- Real-time WebSocket chat with AI agent
+- Context-aware responses about your data
+- Smart follow-up suggestions
+- Natural language queries
 
-### 📈 **Statistical Analysis**
-- Descriptive statistics (mean, median, std dev, quartiles)
-- Correlation matrix with top relationships
-- Distribution analysis
-- Data quality metrics
+### 🕒 **Analysis History**
+- Track all analyzed files
+- Quick re-analysis with one click
+- Delete old analyses
+- View analysis metadata (date, size, filename)
 
-### 🔮 **AI-Powered Insights**
-- Automatic trend detection
-- Anomaly and outlier detection
-- Correlation discovery
-- Pattern recognition
-- Predictive analytics
+### 📦 **AWS S3 Integration**
+- **S3 Object Import** - Import files directly from S3 URLs
+- **Private Bucket Support** - Handle private files using AWS credentials
+- **Multiple Formats** - Support for `s3://` and `https://` S3 links
+- **Automated Download** - Fetches and processes data seamlessly
 
-### 📄 **Export & Share**
-- Professional PDF reports
-- Download cleaned CSV files
-- Export individual charts
-- Complete analysis summaries
+### 🎨 **Modern UI**
+- Neon/dark theme with glassmorphism
+- Fully responsive design
+- Smooth animations
+- Mobile-friendly interface
 
 ---
 
-## 🚀 Quick Start
+## 🛠️ Tech Stack
+
+**Frontend:**
+- React + Vite
+- React Router for navigation
+- Axios for API calls
+- Plotly for charts
+
+**Backend:**
+- FastAPI (Python)
+- Google Gemini AI
+- Pandas for data processing
+- WebSocket for real-time chat
+
+**Database & Auth:**
+- Supabase (PostgreSQL + Auth)
+- Row-Level Security (RLS)
+- JWT tokens
+
+**Storage & Cloud:**
+- AWS S3 (via Boto3)
+
+---
+
+## 🚀 Quick Setup
 
 ### Prerequisites
 - Python 3.10+
-- Node.js 18+
-- Google Gemini API key ([Get one here](https://ai.google.dev/))
+- Node.js 16+
+- Supabase account (free tier works!)
+- Google Gemini API key
 
-### Installation
-
-**1. Clone the repository**
+### 1. Clone Repository
 ```bash
-git clone https://github.com/yourusername/zeroanalyst.git
-cd zeroanalyst
+git clone <your-repo-url>
+cd insightflow
 ```
 
-**2. Backend Setup**
+### 2. Backend Setup
+
 ```bash
 cd backend
-python -m venv venv
+
+# Create virtual environment
+python3 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
+
+# Install dependencies
+pip3 install -r requirements.txt
+
+# Create .env file
+cp .env.example .env
 ```
 
-**3. Configure Environment**
+**Edit `backend/.env`:**
 ```bash
-# Create .env file in backend/
-echo "GOOGLE_API_KEY=your_api_key_here" > .env
-echo "GEMINI_MODEL=gemini-2.5-flash" >> .env
-echo "TEMPERATURE=0.7" >> .env
-echo "MAX_TOKENS=8192" >> .env
-echo "CHROMA_PERSIST_DIR=./chroma_db" >> .env
+# Google AI
+GOOGLE_API_KEY=your_gemini_api_key_here
+
+# Supabase
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# JWT (generate with: python3 -c "import secrets; print(secrets.token_urlsafe(32))")
+JWT_SECRET_KEY=your_generated_secret_key
+
+# AWS S3 (Optional - for private buckets)
+AWS_ACCESS_KEY_ID=your_access_key_id
+AWS_SECRET_ACCESS_KEY=your_secret_access_key
+AWS_REGION=us-east-1
 ```
 
-**4. Frontend Setup**
-```bash
-cd ../frontend
-npm install
+### 3. Supabase Setup
+
+**A. Create Supabase Project:**
+1. Go to [supabase.com](https://supabase.com)
+2. Create new project
+3. Copy URL and anon key to `.env`
+
+**B. Disable Email Confirmation:**
+1. Go to: `Authentication > Providers > Email`
+2. Turn OFF "Confirm email"
+3. Save
+
+**C. Run SQL to Create Table:**
+
+Go to SQL Editor and run:
+
+```sql
+-- Enable UUID extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Create analysis_history table
+CREATE TABLE IF NOT EXISTS analysis_history (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    filename VARCHAR(255) NOT NULL,
+    file_size BIGINT,
+    analysis_results JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create indexes
+CREATE INDEX IF NOT EXISTS idx_analysis_user_id ON analysis_history(user_id);
+CREATE INDEX IF NOT EXISTS idx_analysis_created_at ON analysis_history(created_at DESC);
+
+-- Enable Row Level Security
+ALTER TABLE analysis_history ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies
+CREATE POLICY "Enable insert for authenticated users"
+ON analysis_history FOR INSERT
+TO authenticated, anon
+WITH CHECK (true);
+
+CREATE POLICY "Enable select for users based on user_id"
+ON analysis_history FOR SELECT
+TO authenticated, anon
+USING (user_id::text = user_id::text);
+
+CREATE POLICY "Enable delete for users based on user_id"
+ON analysis_history FOR DELETE
+TO authenticated, anon
+USING (user_id::text = user_id::text);
 ```
 
-**5. Start the Application**
+### 4. Frontend Setup
 
-Terminal 1 (Backend):
-```bash
-cd backend
-source venv/bin/activate
-python app.py
-```
-
-Terminal 2 (Frontend):
 ```bash
 cd frontend
+
+# Install dependencies
+npm install
+
+# Start dev server
 npm run dev
 ```
 
-**6. Open your browser**
-```
-http://localhost:5173
-```
+### 5. Start Backend
 
----
-
-## 📖 Usage
-
-### Basic Workflow
-
-1. **Upload Your Data**
-   - Drag & drop CSV or Excel file
-   - See instant preview
-
-2. **Analyze**
-   - Click "Analyze" button
-   - Get automated insights in seconds
-
-3. **Chat with AI**
-   - Click "💬 Chat with AI"
-   - Ask questions like:
-     - "Show me revenue trends"
-     - "Are there any anomalies?"
-     - "What factors affect sales?"
-     - "Compare Q1 vs Q2 performance"
-
-4. **Export Results**
-   - Download PDF report
-   - Export cleaned data
-   - Save individual charts
-
-### Example Questions
-
-```
-"What are the top 5 products by revenue?"
-"Show me the correlation between price and sales"
-"Are there any outliers in the data?"
-"What's the average customer age by region?"
-"Predict next month's sales based on trends"
-"Which factors most influence customer churn?"
+```bash
+cd backend
+./start.sh
+# Or manually: source venv/bin/activate && python3 app.py
 ```
 
 ---
 
-## 🏗️ Architecture
+## 🎯 Usage
+
+1. **Open** http://localhost:5173
+2. **Register** a new account
+3. **Upload** CSV or Excel file
+4. **Analyze** - Get instant insights
+5. **Chat** with AI about your data
+6. **View History** - See past analyses
+
+---
+
+## 📁 Project Structure
 
 ```
-┌─────────────────────────────────────────────────┐
-│                   Frontend                      │
-│              React + Vite + Plotly              │
-│         (Beautiful UI with WebSocket)           │
-└────────────────┬────────────────────────────────┘
-                 │ HTTP/WebSocket
-┌────────────────▼────────────────────────────────┐
-│                  Backend                        │
-│            FastAPI + Uvicorn                    │
-│         (Async, Real-time, RESTful)             │
-└────────────────┬────────────────────────────────┘
-                 │
-    ┌────────────┼────────────┐
-    │            │            │
-┌───▼───┐   ┌───▼───┐   ┌───▼────┐
-│  AI   │   │  RAG  │   │ Tools  │
-│Engine │   │Pipeline│   │Registry│
-│Gemini │   │Chroma │   │Analysis│
-└───────┘   └───────┘   └────────┘
+insightflow/
+├── backend/
+│   ├── app.py                 # Main FastAPI app
+│   ├── routes/
+│   │   ├── auth.py           # Authentication endpoints
+│   │   └── history.py        # History endpoints
+│   ├── modules/
+│   │   ├── data_cleaner.py   # Data cleaning logic
+│   │   ├── stats_engine.py   # Statistical analysis
+│   │   ├── chart_generator.py # Chart generation
+│   │   ├── insight_engine.py # AI insights
+│   │   ├── supabase_client.py # Database client
+│   │   └── auth_utils.py     # JWT utilities
+│   └── .env                  # Environment variables
+│
+└── frontend/
+    ├── src/
+    │   ├── components/       # React components
+    │   ├── api/             # API client
+    │   └── App.jsx          # Main app with routing
+    └── package.json
 ```
 
-### Components
+---
 
-- **Frontend**: React SPA with real-time chat
-- **Backend**: FastAPI async server
-- **AI Engine**: Gemini 2.5 Flash for conversations
-- **RAG Pipeline**: ChromaDB for semantic search
-- **Tool Registry**: Analysis functions (stats, charts, insights)
+## 🔑 Environment Variables
+
+### Backend `.env`
+```bash
+# Google Gemini AI
+GOOGLE_API_KEY=your_key_here
+GEMINI_MODEL=gemini-2.0-flash-exp
+
+# Supabase
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your_anon_key
+
+# JWT Authentication
+JWT_SECRET_KEY=your_secret_key
+```
 
 ---
 
-## 🎨 Design
+## 🐛 Troubleshooting
 
-### Color Palette
-- **Background**: `#0a0a0f` (Deep Black)
-- **Surface**: `#1a1a24` (Dark Gray)
-- **Accent Green**: `#00ff88` (Neon)
-- **Accent Cyan**: `#00d4ff` (Bright)
-- **Accent Pink**: `#ff0066` (Vibrant)
+### Backend won't start
+- Make sure virtual environment is activated: `source venv/bin/activate`
+- Check all dependencies installed: `pip3 install -r requirements.txt`
+- Verify `.env` file exists with all required keys
 
-### Typography
-- **Sans**: Inter (Modern, Clean)
-- **Mono**: JetBrains Mono (Code)
+### "Supabase credentials not found"
+- Check `SUPABASE_URL` and `SUPABASE_ANON_KEY` in `.env`
+- Make sure no extra spaces or quotes
 
-### Effects
-- Glassmorphism
-- Gradient backgrounds
-- Glow effects
-- Smooth animations
-- Micro-interactions
+### "User created but session not established"
+- Disable email confirmation in Supabase settings
+- Go to: Authentication > Providers > Email > Turn OFF "Confirm email"
 
----
+### History not showing
+- Make sure you ran the SQL to create `analysis_history` table
+- Check RLS policies are created correctly
+- Verify you're logged in
 
-## 📊 Tech Stack
-
-See [TECH_STACK.md](TECH_STACK.md) for detailed information.
-
-**Backend:**
-- FastAPI, Uvicorn, Python 3.10+
-- Google Gemini 2.5 Flash
-- ChromaDB, Sentence Transformers
-- Pandas, NumPy, Plotly
-
-**Frontend:**
-- React 18, Vite
-- Axios, React Markdown
-- Plotly.js
-- CSS Variables
+### Port already in use
+- Kill existing process: `lsof -ti:5001 | xargs kill -9`
+- Or use different port in `app.py`
 
 ---
 
-## 🔒 Security
+## 📝 API Endpoints
 
-- API keys stored in `.env` (never committed)
-- CORS configured for localhost only
-- Data processed locally (not stored)
-- WebSocket authentication
-- Input validation on all endpoints
+### Authentication
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - Login
+- `GET /api/auth/me` - Get current user
+- `POST /api/auth/logout` - Logout
+
+### Analysis
+- `POST /api/upload` - Upload file
+- `POST /api/analyze` - Analyze data (requires auth)
+- `POST /api/generate-plotly-chart` - Generate chart
+
+### History
+- `GET /api/history/` - Get user's history (requires auth)
+- `POST /api/history/save` - Save to history (requires auth)
+- `DELETE /api/history/{id}` - Delete history item (requires auth)
+
+### AWS S3
+- `POST /api/upload-from-s3` - Import file from S3 URL
+
+### Chat
+- `POST /api/chat/init` - Initialize chat session
+- `POST /api/chat/message` - Send message
+- `WS /ws/chat/{session_id}` - WebSocket chat
 
 ---
 
-## 🤝 Contributing
+## 🎨 Features in Detail
 
-Contributions are welcome! Please:
+### Data Cleaning
+- Removes duplicates
+- Handles missing values (mean/median/mode imputation)
+- Detects and handles outliers
+- Type inference and conversion
+- Column standardization
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+### Statistics
+- Descriptive stats (mean, median, mode, std dev)
+- Distribution analysis
+- Correlation matrices
+- Trend detection
+- Categorical analysis
+
+### AI Insights
+- Pattern recognition
+- Anomaly detection
+- Trend analysis
+- Actionable recommendations
+- Natural language summaries
 
 ---
 
-## 📝 License
+## 🚀 Deployment
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+### Backend (Render/Railway)
+1. Connect GitHub repo
+2. Set environment variables
+3. Build command: `pip install -r requirements.txt`
+4. Start command: `uvicorn app:app --host 0.0.0.0 --port $PORT`
+
+### Frontend (Vercel/Netlify)
+1. Connect GitHub repo
+2. Build command: `npm run build`
+3. Publish directory: `dist`
+4. Set `VITE_API_BASE_URL` environment variable
 
 ---
 
-## 🙏 Acknowledgments
+##  Acknowledgments
 
 - **Google Gemini** for the amazing AI capabilities
 - **FastAPI** for the modern Python framework
@@ -266,6 +360,18 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🌟 Star History
 
 If you find ZeroAnalyst useful, please consider giving it a star! ⭐
+
+---
+
+## 🤝 Contributing
+
+Contributions welcome! Please open an issue or PR.
+
+---
+
+## 📝 License
+
+MIT License - feel free to use for personal or commercial projects!
 
 ---
 

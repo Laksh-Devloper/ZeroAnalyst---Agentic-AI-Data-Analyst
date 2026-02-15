@@ -12,12 +12,14 @@ dist/
 build/
 *.egg
 
-# Flask
+# Flask/FastAPI
 instance/
 .webassets-cache
-uploads/*.csv
-uploads/*.xlsx
-uploads/*.xls
+backend/uploads/
+backend/venv/
+backend/__pycache__/
+frontend/node_modules/
+frontend/dist/
 
 # Environment
 .env

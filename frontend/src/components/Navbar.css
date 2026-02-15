@@ -95,6 +95,49 @@
     gap: var(--spacing-md);
 }
 
+/* User Info */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-xs) var(--spacing-md);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+}
+
+.user-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: var(--gradient-primary);
+    color: var(--bg-primary);
+    font-weight: 600;
+    font-size: 0.875rem;
+    border-radius: 50%;
+}
+
+.user-email {
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mobile-user-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    margin: var(--spacing-sm) 0;
+}
+
 .btn-primary {
     padding: 10px 24px;
     font-size: 15px;
